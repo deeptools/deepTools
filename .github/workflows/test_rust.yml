@@ -30,11 +30,21 @@ jobs:
               run: cargo test --locked --verbose --no-default-features
               env:
                   RUSTFLAGS: "-D warnings"
+            - name: cargo build (io API)
+              run: cargo build --locked --verbose --no-default-features --features io
+              env:
+                  RUSTFLAGS: "-D warnings"
+            - name: cargo test (io API)
+              run: cargo test --locked --verbose --no-default-features --features io
+              env:
+                  RUSTFLAGS: "-D warnings"
             - name: cargo build (python extension)
               run: cargo build --locked --verbose
             - name: cargo test (python extension)
               run: cargo test --locked --verbose
-            - name: core crate has no pyo3 dependency
+            - name: core and io crate have no pyo3 dependency
               run: |
-                cargo tree -e normal,build --prefix none --no-default-features > tree.txt
-                ! grep -q '^pyo3' tree.txt
+                for f in '' '--features io'; do
+                  cargo tree -e normal,build --prefix none --no-default-features $f > tree.txt
+                  ! grep -q '^pyo3' tree.txt
+                done

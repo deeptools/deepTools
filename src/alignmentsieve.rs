@@ -1,14 +1,25 @@
+#[cfg(feature = "python")]
 use crate::filehandler::{is_bed_or_gtf, read_bedfile};
+#[cfg(feature = "python")]
 use crate::filtering::Alignmentfilters;
+#[cfg(feature = "python")]
 use pyo3::prelude::*;
+#[cfg(feature = "python")]
 use pyo3::types::PyList;
+use rust_htslib::bam;
 use rust_htslib::bam::record::CigarString;
-use rust_htslib::bam::{self, Header, Read, Reader, Writer};
+#[cfg(feature = "python")]
+use rust_htslib::bam::{Header, Read, Reader, Writer};
+#[cfg(feature = "python")]
 use std::collections::HashMap;
+#[cfg(feature = "python")]
 use std::fs::File;
+#[cfg(feature = "python")]
 use std::io::{BufWriter, Write};
+#[cfg(feature = "python")]
 use std::path::Path;
 
+#[cfg(feature = "python")]
 #[pyfunction]
 pub fn r_alignmentsieve(
     py: Python,
@@ -202,7 +213,7 @@ pub fn r_alignmentsieve(
             }
 
             let tid = record.tid() as usize;
-            if let Some(shifted) = apply_shift(&record, &readshift, chrom_sizes[tid], &keep_tags) {
+            if let Ok(shifted) = apply_shift(&record, &readshift, chrom_sizes[tid], &keep_tags) {
                 if let Some(ref mut w) = obam {
                     w.write(&shifted).unwrap_or_else(|e| {
                         panic!(
@@ -333,6 +344,7 @@ pub fn r_alignmentsieve(
     Ok(())
 }
 
+#[cfg(feature = "python")]
 /// Determines whether a record should be filtered out.
 /// true -> record should be filtered out.
 fn filter_record(
@@ -431,6 +443,7 @@ fn filter_record(
     false
 }
 
+#[cfg(feature = "python")]
 /// Writes a single fragment as a BEDPE line (chrom\tstart\tend) if tlen > 0.
 fn write_bed_line(record: &bam::Record, chrom: &str, chrom_len: u64, bw: &mut BufWriter<File>) {
     let tlen: i64 = {
@@ -497,17 +510,30 @@ fn query_alignment_end(record: &bam::Record) -> i64 {
     read_pos
 }
 
-fn apply_shift(
+/// Why [`apply_shift`] did not return a shifted record.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ShiftRefusal {
+    /// The read is not part of a proper pair.
+    NotProperPair,
+    /// `shift` has fewer than four values.
+    ShortShift,
+    /// The shifted fragment is empty after clamping to the chromosome.
+    ZeroSpan,
+}
+
+/// Shifts a proper-pair alignment as `alignmentSieve --ATACshift` does and rewrites it as one match.
+/// `shift` is `[fwd read1, rev read1, fwd read2, rev read2]` offsets; tags not in `keep_tags` are dropped.
+pub fn apply_shift(
     record: &bam::Record,
     shift: &[i32],
     chrom_len: u64,
     keep_tags: &[[u8; 2]],
-) -> Option<bam::Record> {
+) -> Result<bam::Record, ShiftRefusal> {
     if !record.is_proper_pair() {
-        return None;
+        return Err(ShiftRefusal::NotProperPair);
     }
     if shift.len() < 4 {
-        return None;
+        return Err(ShiftRefusal::ShortShift);
     }
 
     let tlen = record.insert_size();
@@ -550,7 +576,7 @@ fn apply_shift(
         end = chrom_len as i64;
     }
     if end - start < 1 {
-        return None;
+        return Err(ShiftRefusal::ZeroSpan);
     }
 
     let mut newrec = record.clone();
@@ -598,9 +624,10 @@ fn apply_shift(
     };
     newrec.set_mpos(new_mpos);
 
-    Some(newrec)
+    Ok(newrec)
 }
 
+#[cfg(feature = "python")]
 fn smart_label(label: &str) -> String {
     let basename = Path::new(label)
         .file_name()
@@ -614,5 +641,57 @@ fn smart_label(label: &str) -> String {
         basename.to_string()
     } else {
         without_ext.to_string()
+    }
+}
+
+#[cfg(test)]
+mod shift_tests {
+    use super::*;
+    use rust_htslib::bam::record::{Cigar, CigarString};
+
+    const PAIRED: u16 = 0x1 | 0x2;
+    const READ1: u16 = 0x40;
+    const SHIFT: [i32; 4] = [4, -5, 4, -5];
+
+    fn record(flags: u16, pos: i64, len: u32) -> bam::Record {
+        let mut r = bam::Record::new();
+        let cigar = CigarString(vec![Cigar::Match(len)]);
+        r.set(b"r", Some(&cigar), &vec![b'A'; len as usize], &vec![30; len as usize]);
+        r.set_flags(flags);
+        r.set_pos(pos);
+        r.set_insert_size(200);
+        r
+    }
+
+    #[test]
+    fn refuses_reads_outside_a_proper_pair() {
+        assert_eq!(
+            apply_shift(&record(READ1, 100, 50), &SHIFT, 1000, &[]).unwrap_err(),
+            ShiftRefusal::NotProperPair
+        );
+    }
+
+    #[test]
+    fn refuses_a_short_shift_vector() {
+        assert_eq!(
+            apply_shift(&record(PAIRED | READ1, 100, 50), &[4, -5], 1000, &[]).unwrap_err(),
+            ShiftRefusal::ShortShift
+        );
+    }
+
+    #[test]
+    fn refuses_a_fragment_pushed_off_the_chromosome() {
+        // Forward read1 at pos 5000 on a 1000 bp chromosome: start 5004 > chrom_len, so the span clamps to nothing.
+        assert_eq!(
+            apply_shift(&record(PAIRED | READ1, 5000, 50), &SHIFT, 1000, &[]).unwrap_err(),
+            ShiftRefusal::ZeroSpan
+        );
+    }
+
+    #[test]
+    fn shifts_forward_read1_start_and_tlen() {
+        let r = apply_shift(&record(PAIRED | READ1, 100, 50), &SHIFT, 1000, &[]).unwrap();
+        assert_eq!(r.pos(), 104);
+        assert_eq!(r.insert_size(), 200 + (-5 - 4) as i64);
     }
 }

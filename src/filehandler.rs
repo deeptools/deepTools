@@ -28,6 +28,7 @@ pub fn bam_ispaired(bam_ifile: &str) -> bool {
     return false;
 }
 
+/// Writes `(chrom, value)` lines as `bedgraph` or `bigwig`, the latter using `chromsizes` for the header.
 pub fn write_covfile<LI>(lines: LI, ofile: &str, filetype: &str, chromsizes: HashMap<String, u32>)
 where
     LI: Iterator<Item = (String, Value)>,
@@ -313,6 +314,8 @@ pub fn read_gtffile(
     return (regions, (filename, entries));
 }
 
+/// Reads a BED or GTF file into regions on the contigs in `chroms`.
+/// Also returns the file name and the number of entries read.
 pub fn read_bedfile(
     bed_file: &String,
     metagene: bool,

@@ -69,26 +69,44 @@ impl BlacklistIndex {
     // }
 }
 
+/// Read filters and manipulations shared by the deepTools read-processing tools.
+/// Options left `None` in [`Alignmentfilters::new`] disable the corresponding filter.
 #[derive(Clone)]
 pub struct Alignmentfilters {
+    /// Regions whose overlapping reads are dropped (`--blackListFileName`).
     pub blacklist: Option<Vec<Region>>,
     blacklist_index: Option<BlacklistIndex>,
+    /// Minimum mapping quality (`--minMappingQuality`).
     pub minmappingquality: u8,
+    /// SAM flag bits that must all be set (`--samFlagInclude`).
     pub samflaginclude: u16,
+    /// SAM flag bits that must all be unset (`--samFlagExclude`).
     pub samflagexclude: u16,
+    /// Minimum fragment length (`--minFragmentLength`).
     pub minfraglen: u32,
+    /// Maximum fragment length, 0 for no limit (`--maxFragmentLength`).
     pub maxfraglen: u32,
+    /// Count only the 3 bp at the fragment centre (`--MNase`).
     pub mnase: bool,
+    /// Base offsets from the read start and end (`--Offset`).
     pub offset: (i32, i32),
+    /// Keep only reads of this RNA strand, `forward` or `reverse` (`--filterRNAstrand`).
     pub filterrnastrand: String,
+    /// Extend reads to the fragment length (`--extendReads`).
     pub extendreads: bool,
+    /// Extension length for single-end reads.
     pub extendreadslen: u32,
+    /// Take the extension length from the data, see [`Alignmentfilters::set_extendreadslen`].
     pub extendreads_auto: bool,
+    /// Count only the centre of each fragment (`--centerReads`).
     pub centerreads: bool,
+    /// Whether any filter is active.
     pub filter: bool,
+    /// Whether any read manipulation (MNase, offset, extension, centring) is active.
     pub manipulate: bool,
 }
 impl Alignmentfilters {
+    /// Builds the filters from optional settings; `None` or a default value switches that filter off.
     pub fn new(
         blacklist: Option<Vec<Region>>,
         minmappingquality: Option<u8>,
@@ -163,6 +181,8 @@ impl Alignmentfilters {
         }
     }
 
+    /// Sets `extendreadslen` to the median fragment length of proper pairs found in `regions` of `bamfile`.
+    /// Panics if there are none.
     pub fn set_extendreadslen(&mut self, bamfile: &str, nproc: usize, regions: &Vec<Region>) {
         const FREAD: u16 = 0x40;
         let pool = ThreadPoolBuilder::new()
@@ -200,6 +220,7 @@ impl Alignmentfilters {
         }
     }
 
+    /// Returns `true` if the record is to be skipped.
     pub fn filter_record(&self, rec: &Record, chrom: &str) -> bool {
         // Decides filtering of a record. The bool return is used to 'continue', i.e. skip the record.
         if rec.is_unmapped() {
@@ -280,6 +301,7 @@ impl Alignmentfilters {
         }
     }
 
+    /// Returns the covered positions after MNase, offset, extension or centring, or `None` if the record is skipped.
     pub fn manipulate_record(&self, rec: &Record) -> Option<Vec<u32>> {
         // Not just simple yes - no filtering, but actually manipulating the record.
         // In general, this is the case for MNase mode, offset, extendreads and centerreads.
@@ -383,6 +405,7 @@ impl Alignmentfilters {
         }
     }
 
+    /// Aligned blocks of the record with `offset` applied, as covered positions.
     pub fn rec_blocks_for_offset(&self, rec: &Record) -> Vec<u32> {
         let mut blocks: Vec<(i64, i64)> = rec
             .aligned_blocks()
@@ -447,6 +470,7 @@ impl Alignmentfilters {
         stretch
     }
 
+    /// Positions covered by the record after extending it to the fragment (or `extendreadslen`).
     pub fn rec_extension(&self, rec: &Record) -> Vec<u32> {
         let read_len: i64 = rec.seq_len_from_cigar(false) as i64;
         let is_pe = rec.is_proper_pair();
@@ -490,6 +514,7 @@ impl Alignmentfilters {
         (fragment_start.max(0) as u32..fragment_end.max(0) as u32).collect()
     }
 
+    /// Returns `true` if the record overlaps a blacklisted region on `chrom`.
     pub fn rec_in_blacklist(&self, rec: &Record, chrom: &str) -> bool {
         let pos = rec.pos() as u32;
         let idx = self
