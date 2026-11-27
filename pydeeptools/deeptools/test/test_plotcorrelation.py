@@ -1,10 +1,12 @@
 import os.path
 import tempfile
 
+import numpy as np
 import pytest
 from matplotlib.testing.compare import compare_images
 
 import deeptools.plotCorrelation as pc
+from deeptools.correlation import Correlation
 
 ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_data/"
 COR_DATA_IN1 = ROOT + "multiBamSummary_result1.npz"
@@ -83,3 +85,17 @@ def test_correlation_plot_scatter_ggplot():
 
     res = compare_images(COR_PLOT_GG_2, out_png2_gg, 50)
     assert res is None, "Plots do not match"
+
+
+def test_get_outlier_indices_uses_deviations_from_median():
+    # Baseline centered around 100 with unit spread plus one extreme outlier at 1000.
+    # Under Iglewicz & Hoaglin (1993), MAD = median(|x - median(x)|) = 1.0,
+    # giving modified z-score |1000 - 100| / (1.4826 * 1.0) ~= 607 > 200.
+    base = np.array([99.0, 100.0, 101.0] * 30 + [1000.0])
+    outliers = Correlation.get_outlier_indices(base)
+    assert list(outliers) == [len(base) - 1]
+
+    # Modified Z-score outlier detection must be invariant to additive shifts.
+    shifted = base + 500.0
+    assert list(Correlation.get_outlier_indices(shifted)) == list(outliers)
+
