@@ -112,7 +112,7 @@ class Correlation:
         """
         median = np.median(data)
         b_value = 1.4826  # value set for a normal distribution
-        mad = b_value * np.median(np.abs(data))
+        mad = b_value * np.median(np.abs(data - median))
         outliers = []
         if mad > 0:
             deviation = abs(data - median) / mad
