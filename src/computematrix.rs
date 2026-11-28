@@ -36,8 +36,8 @@ pub fn r_computematrix(
     scale: f32,            // scaling factor for writing out values. default is 1.0 (no scaling)
     nanafterend: bool,     // end regions will treated as nans. Default is false.
     skipzeros: bool,       // skip regions with all zeros. Default is false.
-    minthresh: f32,        // minimum threshold to keep a region. If not set it will equal 0.0
-    maxthresh: f32,        // maximum threshold to keep a region. if not set it will equal 0.0
+    minthresh: Option<f32>, // discard a region if a bin is at or below this threshold
+    maxthresh: Option<f32>, // discard a region if a bin is at or above this threshold
     blacklist: &str,       // path to blacklist BED file, or "None"
     averagetypebins: &str, // operation to summarize values over bins. Default is mean.
     sortregions: &str, // either ascend, descend or keep. Default is keep (and ignores sortusing).
@@ -347,19 +347,13 @@ fn should_skip_row(row: &[f32], scale_regions: &Scalingregions) -> bool {
     if scale_regions.skipzero && row.iter().all(|&x| x == 0.0) {
         return true;
     }
-    if scale_regions.minthresh != 0.0
-        && !row.iter().any(|&x| x.is_nan())
-        && row.iter().any(|&x| x <= scale_regions.minthresh)
-    {
-        return true;
+    let (min, max) = (scale_regions.minthresh, scale_regions.maxthresh);
+    if (min.is_none() && max.is_none()) || row.iter().any(|x| x.is_nan()) {
+        return false;
     }
-    if scale_regions.maxthresh != 0.0
-        && !row.iter().any(|&x| x.is_nan())
-        && row.iter().any(|&x| x >= scale_regions.maxthresh)
-    {
-        return true;
-    }
-    false
+    row.iter().any(|&x| {
+        min.is_some_and(|threshold| x <= threshold) || max.is_some_and(|threshold| x >= threshold)
+    })
 }
 
 fn recompute_regionsizes(

@@ -6,6 +6,8 @@ import tempfile
 from typing import Any
 
 import numpy as np
+import pyBigWig
+import pytest
 
 import deeptools.computeMatrix2 as cm
 
@@ -1121,3 +1123,36 @@ def test_compute_matrix_refpoint_gtfmgid():
 
     mat_match, mat_diffs = _compare_tab_files(outfile_mat, exp_mat)
     assert mat_match, f"matrix mismatch: {mat_diffs}"
+
+
+@pytest.mark.parametrize(("option", "expected"), [
+    (None, [("negative", -2.0), ("zero", 0.0), ("positive", 3.0)]),
+    ("--minThreshold", [("positive", 3.0)]),
+    ("--maxThreshold", [("negative", -2.0)]),
+])
+def test_computeMatrix_zero_threshold(tmp_path, option, expected):
+    track = tmp_path / "signal.bw"
+    with pyBigWig.open(str(track), "w") as bw:
+        bw.addHeader([("chr1", 100)])
+        bw.addEntries(["chr1"] * 3, [0, 20, 40],
+                      ends=[10, 30, 50], values=[-2.0, 0.0, 3.0])
+    regions = tmp_path / "regions.bed"
+    regions.write_text(
+        "chr1\t0\t10\tnegative\t0\t+\n"
+        "chr1\t20\t30\tzero\t0\t+\n"
+        "chr1\t40\t50\tpositive\t0\t+\n"
+    )
+    matrix = tmp_path / "matrix.gz"
+    args = [
+        "reference-point", "-S", str(track), "-R", str(regions),
+        "-b", "0", "-a", "10", "-bs", "10", "-o", str(matrix),
+    ]
+    if option:
+        args += [option, "0"]
+    cm.main(args)
+    with gzip.open(matrix, "rt") as handle:
+        header = json.loads(next(handle)[1:])
+        rows = [line.split("\t") for line in handle]
+    assert [(row[3], float(row[6])) for row in rows] == expected
+    assert header["min threshold"] == (0 if option == "--minThreshold" else None)
+    assert header["max threshold"] == (0 if option == "--maxThreshold" else None)

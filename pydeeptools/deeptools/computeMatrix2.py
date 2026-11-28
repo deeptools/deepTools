@@ -456,10 +456,6 @@ def process_args(args=None):
     if not args.sortUsingSamples:
         args.sortUsingSamples = []
 
-    if not args.minThreshold:
-        args.minThreshold = 0.0
-    if not args.maxThreshold:
-        args.maxThreshold = 0.0
     return args
 
 
