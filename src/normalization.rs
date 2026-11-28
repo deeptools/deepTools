@@ -28,7 +28,7 @@ pub enum Normalization {
     Rpkm,
     /// Counts per million.
     Cpm,
-    /// Bins per million.
+    /// Bins per million: counts per bin / sum of counts over all bins (in millions).
     Bpm,
     /// Reads per genomic content (1x).
     Rpgc,
@@ -80,10 +80,21 @@ impl FromStr for ScaleFactorsMethod {
     }
 }
 
-/// Scale factor for one sample; `preset` (`--scaleFactor`) overrides `method`. Zero mapped reads gives `inf`.
+/// Scale factor for one sample; `preset` (`--scaleFactor`) overrides `method`.
+///
+/// `bin_sum` is the sum of the raw per-bin counts (the BPM denominator), excluding the
+/// chromosomes ignored for normalization. Zero mapped reads (or, for BPM, a zero `bin_sum`)
+/// gives `inf`.
+///
+/// BPM only needs `bin_sum` because the scale factor is applied after binning:
+/// `bam_pileup` workers write unscaled counts to temp files and return their partial sums,
+/// which are reduced like the mapped-read count, and the scale factor is applied while the
+/// temp files are streamed into the output. (deepTools 3.x fixed the scale factor before
+/// binning and applied it inside each worker, so the bin total was not yet known.)
 pub fn scale_factor(
     method: Normalization,
     mapped: u32,
+    bin_sum: u64,
     binsize: u32,
     effective_genome_size: u64,
     readlen: f32,
@@ -99,11 +110,8 @@ pub fn scale_factor(
         Normalization::Rpkm => 1.0 / (mmr * bs_kb),
         // reads per tile / total reads (millions)
         Normalization::Cpm => 1.0 / mmr,
-        // bins per million mapped reads
-        Normalization::Bpm => {
-            let tmp = (mapped as f32 / bs_kb) / 1e6;
-            1.0 / (tmp * bs_kb)
-        }
+        // reads per tile / sum of reads over all tiles (millions)
+        Normalization::Bpm => (1e6 / bin_sum as f64) as f32,
         // 1x coverage: mapped reads * read length / effective genome size
         Normalization::Rpgc => {
             if effective_genome_size == 0 {
@@ -122,6 +130,8 @@ pub struct SampleStats {
     pub mapped: u32,
     /// Median read length.
     pub readlen: f32,
+    /// Sum of the raw per-bin counts, excluding ignored chromosomes.
+    pub bin_sum: u64,
 }
 
 /// Scale factors for a pair of samples. An empty sample gives `NaN` with `ReadCount`.
@@ -142,7 +152,15 @@ pub fn scale_factor_bamcompare(
         }
         ScaleFactorsMethod::None => {
             let sf = |s: SampleStats| {
-                scale_factor(norm, s.mapped, binsize, effective_genome_size, s.readlen, None)
+                scale_factor(
+                    norm,
+                    s.mapped,
+                    s.bin_sum,
+                    binsize,
+                    effective_genome_size,
+                    s.readlen,
+                    None,
+                )
             };
             Ok((sf(samples[0])?, sf(samples[1])?))
         }

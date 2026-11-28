@@ -28,7 +28,7 @@ def parseArguments():
             'to better reflect the actual fragment length. *bamCoverage* '
             'offers normalization by scaling factor, Reads Per Kilobase per '
             'Million mapped reads (RPKM), counts per million (CPM), bins per '
-            'million mapped reads (BPM) and 1x depth (reads per genome '
+            'million (BPM) and 1x depth (reads per genome '
             'coverage, RPGC).\n',
             usage='bamCoverage -b reads.bam -o coverage.bw\n'
             'help: bamCoverage -h / bamCoverage --help',

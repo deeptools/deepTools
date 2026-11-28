@@ -229,7 +229,7 @@ pub fn r_mbams(
         bam_ispe_filter
             .par_iter()
             .map(|(bamfile, ispe, filter)| {
-                let (bg, _mapped, _unmapped, _readlen, _fraglen) = regionblocks
+                let (bg, _mapped, _unmapped, _readlen, _fraglen, _bin_sum) = regionblocks
                     .par_iter()
                     .map(|i| {
                         bam_pileup(
@@ -238,15 +238,16 @@ pub fn r_mbams(
                         )
                     })
                     .reduce(
-                        || (vec![], 0, 0, vec![], vec![]),
-                        |(mut _bg, mut _mapped, mut _unmapped, mut _readlen, mut _fraglen),
-                         (bg, mapped, unmapped, readlen, fraglen)| {
+                        || (vec![], 0, 0, vec![], vec![], 0),
+                        |(mut _bg, mut _mapped, mut _unmapped, mut _readlen, mut _fraglen, mut _bin_sum),
+                         (bg, mapped, unmapped, readlen, fraglen, bin_sum)| {
                             _bg.extend(bg);
                             _readlen.extend(readlen);
                             _fraglen.extend(fraglen);
                             _mapped += mapped;
                             _unmapped += unmapped;
-                            (_bg, _mapped, _unmapped, _readlen, _fraglen)
+                            _bin_sum += bin_sum;
+                            (_bg, _mapped, _unmapped, _readlen, _fraglen, _bin_sum)
                         },
                     );
                 bg

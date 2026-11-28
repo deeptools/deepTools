@@ -328,6 +328,82 @@ def test_bam_compare_scale_factors_subtract():
         unlink(outfile)
 
 
+def test_bam_coverage_normalizeUsingBPM():
+    """
+    BPM divides by the sum of the per-bin counts, not by the number of mapped reads.
+    At --binSize 25 each 50 bp read of testB.bam lands in 2 bins: 4 reads, 8 binned counts.
+    BPM = count * 1e6 / 8 = count * 125000 (CPM would be count * 250000).
+    """
+    _, outfile = tempfile.mkstemp(suffix=".bg")
+    args = f"-b {BAMFILE_B} -o {outfile} --binSize 25 --normalizeUsing BPM -p 2 " \
+           "--outFileFormat bedgraph".split()
+    bam_cov.main(args)
+    with open(outfile, 'r') as _foo:
+        resp = _foo.readlines()
+    expected = ['3R\t0\t50\t0\n', '3R\t50\t150\t125000\n', '3R\t150\t200\t250000\n']
+    assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
+    unlink(outfile)
+
+
+@pytest.mark.parametrize("bamfile", [BAMFILE_A, BAMFILE_B])
+@pytest.mark.parametrize("binsize", [1, 10, 25, 50])
+@pytest.mark.parametrize("nproc", [1, 3])
+def test_bam_coverage_BPM_sums_to_one_million(bamfile, binsize, nproc):
+    """
+    A BPM track sums to 1e6 over its bins, whatever the bin size or number of threads.
+    """
+    _, outfile = tempfile.mkstemp(suffix=".bg")
+    args = f"-b {bamfile} -o {outfile} --binSize {binsize} --normalizeUsing BPM -p {nproc} " \
+           "--outFileFormat bedgraph".split()
+    bam_cov.main(args)
+    with open(outfile, 'r') as _foo:
+        # collapsed lines span several bins
+        total = sum(float(v) * (int(e) - int(s)) / binsize
+                    for _, s, e, v in (line.split() for line in _foo))
+    assert total == pytest.approx(1e6), total
+    unlink(outfile)
+
+
+def test_bam_coverage_BPM_ignoreForNormalization():
+    """
+    Bins on --ignoreForNormalization chromosomes are written out, but left out of the BPM sum.
+    testA.bam at --binSize 25: 4 binned counts on 3R, 2 on chr_cigar -> 1e6 / 4 = 250000.
+    """
+    _, outfile = tempfile.mkstemp(suffix=".bg")
+    args = f"-b {BAMFILE_A} -o {outfile} --binSize 25 --normalizeUsing BPM " \
+           "--ignoreForNormalization chr_cigar --outFileFormat bedgraph".split()
+    bam_cov.main(args)
+    with open(outfile, 'r') as _foo:
+        resp = _foo.readlines()
+    expected = ['3R\t0\t100\t0\n', '3R\t100\t200\t250000\n',
+                'chr_cigar\t0\t50\t250000\n', 'chr_cigar\t50\t200\t0\n']
+    assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
+    unlink(outfile)
+
+
+def test_bam_compare_BPM_subtract():
+    """
+    Per-sample BPM in bamCompare (--scaleFactorsMethod None).
+    At --binSize 25, ignoring chr_cigar: testA has 4 binned counts (sf 250000),
+    testB has 8 (sf 125000). With CPM these would be 500000 and 250000.
+
+                    0-50   50-100   100-150   150-200
+    testA counts     0       0        1         1
+    testB counts     0       1        1         2
+    subtract         0    -125000   125000      0
+    """
+    _, outfile = tempfile.mkstemp(suffix=".bg")
+    args = f"--bamfile1 {BAMFILE_A} --bamfile2 {BAMFILE_B} --operation subtract " \
+           f"--ignoreForNormalization chr_cigar --binSize 25 -o {outfile} -p 1 " \
+           "--outFileFormat bedgraph --scaleFactorsMethod None --normalizeUsing BPM".split()
+    bam_comp.main(args)
+    with open(outfile, 'r') as _foo:
+        resp = _foo.readlines()
+    expected = ['3R\t0\t50\t0\n', '3R\t50\t100\t-125000\n', '3R\t100\t150\t125000\n', '3R\t150\t200\t0\n']
+    assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
+    unlink(outfile)
+
+
 def test_bam_coverage_filter_blacklist():
     """
     Test --samFlagInclude --samFlagExclude --minMappingQuality and --blackListFileName
