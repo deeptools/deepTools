@@ -998,16 +998,23 @@ def computeSilhouetteScore(d, idx, labels):
     Given a square distance matrix with NaN diagonals, compute the silhouette score
     of a given row (idx). Each row should have an associated label (labels).
     """
-    keep = ~np.isnan(d[idx, ])
-    foo = np.bincount(labels[keep], weights=d[idx, ][keep])
-    groupSizes = np.bincount(labels[keep])
-    intraIdx = labels[idx]
-    if groupSizes[intraIdx] == 1:
+    distances = d[idx]
+    keep = ~np.isnan(distances)
+    neighbours = labels[keep]
+    group_sizes = np.bincount(neighbours)
+    own_group = labels[idx]
+    # The diagonal is absent, so a singleton has no neighbours in its group.
+    if own_group >= len(group_sizes) or group_sizes[own_group] == 0:
         return 0
-    intra = foo[labels[idx]] / groupSizes[intraIdx]
-    interMask = np.arange(len(foo))[np.arange(len(foo)) != labels[idx]]
-    inter = np.min(foo[interMask] / groupSizes[interMask])
-    return (inter - intra) / max(inter, intra)
+    other_groups = group_sizes > 0
+    other_groups[own_group] = False
+    if not other_groups.any():
+        return 0
+    sums = np.bincount(neighbours, weights=distances[keep])
+    intra = sums[own_group] / group_sizes[own_group]
+    inter = np.min(sums[other_groups] / group_sizes[other_groups])
+    scale = max(intra, inter)
+    return (inter - intra) / scale if scale else 0
 
 
 class _matrix:
