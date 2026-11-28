@@ -1,14 +1,112 @@
 use crate::calc::{max_float, mean_float, median_float, min_float, std_float, sum_float};
 use crate::covcalc::{Bin, Gtfparse, Region, Revalue, Scalingregions};
+use bigtools::bed::bedparser::BedValueError;
 use bigtools::beddata::BedParserStreamingIterator;
-use bigtools::{BigWigRead, BigWigWrite, Value};
+use bigtools::{BBIProcessError, BigWigRead, BigWigWrite, Value};
 use flate2::read::MultiGzDecoder;
+use pyo3::PyErr;
+use pyo3::exceptions::{PyIOError, PyValueError};
 use rust_htslib::bam::{IndexedReader, Read, Reader};
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::{BufReader, BufWriter, Write};
 use std::path::Path;
+
+/// Errors from reading BED/GTF inputs and writing coverage outputs.
+#[derive(Debug, thiserror::Error)]
+pub enum FileHandlerError {
+    /// Input file could not be opened.
+    #[error("Failed to open file: {path}: {source}")]
+    Open {
+        path: String,
+        source: std::io::Error,
+    },
+    /// Input file could not be rewound after sniffing its magic bytes.
+    #[error("Failed to seek in file: {path}: {source}")]
+    Seek {
+        path: String,
+        source: std::io::Error,
+    },
+    /// A line of an input file could not be read.
+    #[error("Failed to read a line from '{path}': {source}")]
+    Read {
+        path: String,
+        source: std::io::Error,
+    },
+    /// An integer field of a BED line could not be parsed.
+    #[error("Failed to parse {field} in {format} line '{line}': {source}")]
+    ParseBed {
+        format: &'static str,
+        field: &'static str,
+        line: String,
+        source: std::num::ParseIntError,
+    },
+    /// A BED line had a field count other than 3, 6 or 12.
+    #[error(
+        "Invalid BED format. BED file doesn't have 3, 6 or 12 fields (found {fields} in '{path}')."
+    )]
+    InvalidBed { path: String, fields: usize },
+    /// The BED file name has no stem to use as a label.
+    #[error("Could not determine a file stem/label for BED file '{path}'")]
+    Label { path: String },
+    /// An output file could not be created.
+    #[error("Failed to create output {kind} '{path}': {source}")]
+    CreateOutput {
+        kind: &'static str,
+        path: String,
+        source: std::io::Error,
+    },
+    /// A bedGraph line could not be written or flushed.
+    #[error("Failed to write bedgraph line to '{path}': {source}")]
+    WriteBedgraph {
+        path: String,
+        source: std::io::Error,
+    },
+    /// The bigWig could not be encoded or written.
+    #[error("Failed to write output bigwig file '{path}': {source}")]
+    WriteBigWig {
+        path: String,
+        source: BBIProcessError<BedValueError>,
+    },
+    /// The tokio runtime used for bigWig encoding could not be created.
+    #[error("Unable to create tokio runtime for bw writing: {source}")]
+    Runtime { source: std::io::Error },
+}
+
+impl From<FileHandlerError> for PyErr {
+    fn from(err: FileHandlerError) -> Self {
+        let msg = err.to_string();
+        match err {
+            FileHandlerError::Open { .. }
+            | FileHandlerError::Seek { .. }
+            | FileHandlerError::Read { .. }
+            | FileHandlerError::CreateOutput { .. }
+            | FileHandlerError::WriteBedgraph { .. }
+            | FileHandlerError::WriteBigWig { .. }
+            | FileHandlerError::Runtime { .. } => PyIOError::new_err(msg),
+            FileHandlerError::ParseBed { .. }
+            | FileHandlerError::InvalidBed { .. }
+            | FileHandlerError::Label { .. } => PyValueError::new_err(msg),
+        }
+    }
+}
+
+/// Parse one integer field of a BED line; errors name the format, field and line.
+fn parse_bed_u32(
+    raw: &str,
+    format: &'static str,
+    field: &'static str,
+    line: &str,
+) -> Result<u32, FileHandlerError> {
+    raw.parse::<u32>()
+        .map_err(|source| FileHandlerError::ParseBed {
+            format,
+            field,
+            line: line.to_string(),
+            source,
+        })
+}
 
 pub fn bam_ispaired(bam_ifile: &str) -> bool {
     let mut bam = Reader::from_path(bam_ifile)
@@ -28,65 +126,105 @@ pub fn bam_ispaired(bam_ifile: &str) -> bool {
     return false;
 }
 
-pub fn write_covfile<LI>(lines: LI, ofile: &str, filetype: &str, chromsizes: HashMap<String, u32>)
+pub fn write_covfile<LI>(
+    lines: LI,
+    ofile: &str,
+    filetype: &str,
+    chromsizes: HashMap<String, u32>,
+) -> Result<(), FileHandlerError>
 where
     LI: Iterator<Item = (String, Value)>,
 {
     if filetype == "bedgraph" {
         // write output file, bedgraph
-        let mut writer = BufWriter::new(
-            File::create(ofile)
-                .unwrap_or_else(|e| panic!("Failed to create output file '{}': {}", ofile, e)),
-        );
+        let mut writer = BufWriter::new(File::create(ofile).map_err(|source| {
+            FileHandlerError::CreateOutput {
+                kind: "file",
+                path: ofile.to_string(),
+                source,
+            }
+        })?);
+        let write_err = |source: std::io::Error| FileHandlerError::WriteBedgraph {
+            path: ofile.to_string(),
+            source,
+        };
         for (chrom, val) in lines {
             writeln!(
                 writer,
                 "{}\t{}\t{}\t{}",
                 chrom, val.start, val.end, val.value
             )
-            .unwrap_or_else(|e| panic!("Failed to write bedgraph line to '{}': {}", ofile, e));
+            .map_err(write_err)?;
         }
+        writer.flush().map_err(write_err)?;
     } else {
         let vals = BedParserStreamingIterator::wrap_infallible_iter(lines, false);
         let runtime = tokio::runtime::Builder::new_multi_thread()
             .worker_threads(1)
             .build()
-            .expect("Unable to create tokio runtime for bw writing.");
-        let writer = BigWigWrite::create_file(ofile, chromsizes)
-            .unwrap_or_else(|e| panic!("Failed to create output bigwig file '{}': {}", ofile, e));
-        let _ = writer.write(vals, runtime);
+            .map_err(|source| FileHandlerError::Runtime { source })?;
+        let writer = BigWigWrite::create_file(ofile, chromsizes).map_err(|source| {
+            FileHandlerError::CreateOutput {
+                kind: "bigwig file",
+                path: ofile.to_string(),
+                source,
+            }
+        })?;
+        writer
+            .write(vals, runtime)
+            .map_err(|source| FileHandlerError::WriteBigWig {
+                path: ofile.to_string(),
+                source,
+            })?;
     }
+    Ok(())
 }
 
-fn open_bed_or_gtf_reader(fp: &str) -> BufReader<Box<dyn std::io::Read>> {
-    let mut file = File::open(fp).expect(format!("Failed to open file: {}", fp).as_str());
+fn open_bed_or_gtf_reader(fp: &str) -> Result<BufReader<Box<dyn std::io::Read>>, FileHandlerError> {
+    let mut file = File::open(fp).map_err(|source| FileHandlerError::Open {
+        path: fp.to_string(),
+        source,
+    })?;
     let mut magic = [0u8; 2];
-    let n = std::io::Read::read(&mut file, &mut magic).unwrap_or(0);
-    std::io::Seek::seek(&mut file, std::io::SeekFrom::Start(0))
-        .expect(format!("Failed to seek in file: {}", fp).as_str());
+    let n =
+        std::io::Read::read(&mut file, &mut magic).map_err(|source| FileHandlerError::Read {
+            path: fp.to_string(),
+            source,
+        })?;
+    std::io::Seek::seek(&mut file, std::io::SeekFrom::Start(0)).map_err(|source| {
+        FileHandlerError::Seek {
+            path: fp.to_string(),
+            source,
+        }
+    })?;
     if n == 2 && magic[0] == 0x1f && magic[1] == 0x8b {
-        BufReader::new(Box::new(MultiGzDecoder::new(file)) as Box<dyn std::io::Read>)
+        Ok(BufReader::new(
+            Box::new(MultiGzDecoder::new(file)) as Box<dyn std::io::Read>
+        ))
     } else {
-        BufReader::new(Box::new(file) as Box<dyn std::io::Read>)
+        Ok(BufReader::new(Box::new(file) as Box<dyn std::io::Read>))
     }
 }
 
-pub fn is_bed_or_gtf(fp: &str) -> String {
+pub fn is_bed_or_gtf(fp: &str) -> Result<String, FileHandlerError> {
     // Check if file is a bed or gtf file.
-    let reader = open_bed_or_gtf_reader(fp);
+    let reader = open_bed_or_gtf_reader(fp)?;
     // Get the first line that doesn't start with #
     for line in reader.lines() {
-        let line = line.unwrap_or_else(|e| panic!("Failed to read a line from '{}': {}", fp, e));
+        let line = line.map_err(|source| FileHandlerError::Read {
+            path: fp.to_string(),
+            source,
+        })?;
         if !line.starts_with('#') {
             let fields: Vec<&str> = line.split('\t').collect();
             if fields.len() == 9 {
-                return "gtf".to_string();
+                return Ok("gtf".to_string());
             } else {
-                return "bed".to_string();
+                return Ok("bed".to_string());
             }
         }
     }
-    "Unknown".to_string()
+    Ok("Unknown".to_string())
 }
 
 pub fn read_gtffile(
@@ -100,7 +238,7 @@ pub fn read_gtffile(
     let mut entries: u32 = 0;
     let mut txnids: Vec<String> = Vec::new();
 
-    let gtffile = open_bed_or_gtf_reader(gtf_file);
+    let gtffile = open_bed_or_gtf_reader(gtf_file).unwrap_or_else(|e| panic!("{e}"));
 
     if gtfparse.metagene {
         // metagene implementation - more work here.
@@ -270,14 +408,14 @@ pub fn read_gtffile(
                     .map(|s| s.to_string())
                     .unwrap_or_else(|| format!("{}:{}-{}", fields[0], fields[1], fields[2]));
 
-                if names.contains_key(&entryname) {
-                    let count = names
-                        .get_mut(&entryname)
-                        .expect("Entry name vanished from names map between check and get");
-                    *count += 1;
-                    entryname = format!("{}_r{}", entryname, count);
-                } else {
-                    names.insert(entryname.clone(), 0);
+                match names.get_mut(&entryname) {
+                    Some(count) => {
+                        *count += 1;
+                        entryname = format!("{}_r{}", entryname, count);
+                    }
+                    None => {
+                        names.insert(entryname.clone(), 0);
+                    }
                 }
                 if !chroms.contains(&&fields[0].to_string()) {
                     println!(
@@ -317,7 +455,7 @@ pub fn read_bedfile(
     bed_file: &String,
     metagene: bool,
     chroms: &HashMap<String, u32>,
-) -> (Vec<Region>, (String, u32)) {
+) -> Result<(Vec<Region>, (String, u32)), FileHandlerError> {
     // read a provided bed_file into a vec of Region
     // Additional return is the filename and the number of entries (for sorting later on if needed).
 
@@ -326,11 +464,13 @@ pub fn read_bedfile(
     let mut nonbed12: bool = false;
     let mut entries: u32 = 0;
 
-    let bedfile = open_bed_or_gtf_reader(bed_file);
+    let bedfile = open_bed_or_gtf_reader(bed_file)?;
 
     for line in bedfile.lines() {
-        let line =
-            line.unwrap_or_else(|e| panic!("Failed to read a line from '{}': {}", bed_file, e));
+        let line = line.map_err(|source| FileHandlerError::Read {
+            path: bed_file.to_string(),
+            source,
+        })?;
         let fields: Vec<&str> = line.split('\t').collect();
         // Depending on bedfile, we have either BED3, BED6 or BED12
         // Note that this approach could allow somebody to have a 'mixed' bedfile, why not.
@@ -353,15 +493,8 @@ pub fn read_bedfile(
                         continue;
                     }
                 };
-                let start: u32 = fields[1].parse().unwrap_or_else(|e| {
-                    panic!(
-                        "Failed to parse start position in BED line '{}': {}",
-                        line, e
-                    )
-                });
-                let mut end: u32 = fields[2].parse().unwrap_or_else(|e| {
-                    panic!("Failed to parse end position in BED line '{}': {}", line, e)
-                });
+                let start = parse_bed_u32(fields[1], "BED", "start position", &line)?;
+                let mut end = parse_bed_u32(fields[2], "BED", "end position", &line)?;
                 if start >= chromlen {
                     println!(
                         "Warning, region {} lies entirely beyond the end of {} ({}bp). Skipping.",
@@ -377,14 +510,14 @@ pub fn read_bedfile(
                     );
                     continue;
                 }
-                if names.contains_key(&entryname) {
-                    let count = names
-                        .get_mut(&entryname)
-                        .expect("Entry name vanished from names map between check and get");
-                    *count += 1;
-                    entryname = format!("{}_r{}", entryname, count);
-                } else {
-                    names.insert(entryname.clone(), 0);
+                match names.get_mut(&entryname) {
+                    Some(count) => {
+                        *count += 1;
+                        entryname = format!("{}_r{}", entryname, count);
+                    }
+                    None => {
+                        names.insert(entryname.clone(), 0);
+                    }
                 }
                 regions.push(Region {
                     chrom: fields[0].to_string(), //chrom
@@ -413,15 +546,8 @@ pub fn read_bedfile(
                         continue;
                     }
                 };
-                let start: u32 = fields[1].parse().unwrap_or_else(|e| {
-                    panic!(
-                        "Failed to parse start position in BED line '{}': {}",
-                        line, e
-                    )
-                });
-                let mut end: u32 = fields[2].parse().unwrap_or_else(|e| {
-                    panic!("Failed to parse end position in BED line '{}': {}", line, e)
-                });
+                let start = parse_bed_u32(fields[1], "BED", "start position", &line)?;
+                let mut end = parse_bed_u32(fields[2], "BED", "end position", &line)?;
                 if start >= chromlen {
                     println!(
                         "Warning, region {} lies entirely beyond the end of {} ({}bp). Skipping.",
@@ -437,14 +563,14 @@ pub fn read_bedfile(
                     );
                     continue;
                 }
-                if names.contains_key(&entryname) {
-                    let count = names
-                        .get_mut(&entryname)
-                        .expect("Entry name vanished from names map between check and get");
-                    *count += 1;
-                    entryname = format!("{}_r{}", entryname, count);
-                } else {
-                    names.insert(entryname.clone(), 0);
+                match names.get_mut(&entryname) {
+                    Some(count) => {
+                        *count += 1;
+                        entryname = format!("{}_r{}", entryname, count);
+                    }
+                    None => {
+                        names.insert(entryname.clone(), 0);
+                    }
                 }
                 regions.push(Region {
                     chrom: fields[0].to_string(),  //chrom
@@ -470,12 +596,7 @@ pub fn read_bedfile(
                         continue;
                     }
                 };
-                let feat_start: u32 = fields[1].parse().unwrap_or_else(|e| {
-                    panic!(
-                        "Failed to parse start position in BED12 line '{}': {}",
-                        line, e
-                    )
-                });
+                let feat_start = parse_bed_u32(fields[1], "BED12", "start position", &line)?;
                 if feat_start >= chromlen {
                     println!(
                         "Warning, region {} lies entirely beyond the end of {} ({}bp). Skipping.",
@@ -483,38 +604,27 @@ pub fn read_bedfile(
                     );
                     continue;
                 }
-                if names.contains_key(&entryname) {
-                    let count = names
-                        .get_mut(&entryname)
-                        .expect("Entry name vanished from names map between check and get");
-                    *count += 1;
-                    entryname = format!("{}_r{}", entryname, count);
-                } else {
-                    names.insert(entryname.clone(), 0);
+                match names.get_mut(&entryname) {
+                    Some(count) => {
+                        *count += 1;
+                        entryname = format!("{}_r{}", entryname, count);
+                    }
+                    None => {
+                        names.insert(entryname.clone(), 0);
+                    }
                 }
                 if metagene {
                     let start: u32 = feat_start;
                     let blocksizes: Vec<u32> = fields[10]
                         .split(',')
                         .filter(|x| !x.is_empty())
-                        .map(|x| {
-                            x.parse().unwrap_or_else(|e| {
-                                panic!("Failed to parse blockSizes in BED12 line '{}': {}", line, e)
-                            })
-                        })
-                        .collect();
+                        .map(|x| parse_bed_u32(x, "BED12", "blockSizes", &line))
+                        .collect::<Result<Vec<u32>, FileHandlerError>>()?;
                     let blockstarts: Vec<u32> = fields[11]
                         .split(',')
                         .filter(|x| !x.is_empty())
-                        .map(|x| {
-                            x.parse::<u32>().unwrap_or_else(|e| {
-                                panic!(
-                                    "Failed to parse blockStarts in BED12 line '{}': {}",
-                                    line, e
-                                )
-                            }) + start
-                        })
-                        .collect();
+                        .map(|x| parse_bed_u32(x, "BED12", "blockStarts", &line).map(|s| s + start))
+                        .collect::<Result<Vec<u32>, FileHandlerError>>()?;
 
                     let (starts, ends): (Vec<u32>, Vec<u32>) = blocksizes
                         .into_iter()
@@ -543,15 +653,8 @@ pub fn read_bedfile(
                     entries += 1;
                 } else {
                     let start = feat_start;
-                    let end: u32 = fields[2]
-                        .parse::<u32>()
-                        .unwrap_or_else(|e| {
-                            panic!(
-                                "Failed to parse end position in BED12 line '{}': {}",
-                                line, e
-                            )
-                        })
-                        .min(chromlen);
+                    let end: u32 =
+                        parse_bed_u32(fields[2], "BED12", "end position", &line)?.min(chromlen);
                     if start >= end {
                         println!(
                             "Warning, region {} has a start position ({}) that is not strictly less than its end position ({}). BED start/end must be 5' -> 3' (start < end); strand belongs in a separate column. Skipping.",
@@ -571,18 +674,20 @@ pub fn read_bedfile(
                     entries += 1;
                 }
             }
-            _ => panic!("Invalid BED format. BED file doesn't have 3, 6 or 12 fields."),
+            _ => {
+                return Err(FileHandlerError::InvalidBed {
+                    path: bed_file.to_string(),
+                    fields: fields.len(),
+                });
+            }
         }
     }
 
     let filename = Path::new(bed_file)
         .file_stem()
-        .unwrap_or_else(|| {
-            panic!(
-                "Could not determine a file stem/label for BED file '{}'",
-                bed_file
-            )
-        })
+        .ok_or_else(|| FileHandlerError::Label {
+            path: bed_file.to_string(),
+        })?
         .to_string_lossy()
         .into_owned();
 
@@ -591,7 +696,7 @@ pub fn read_bedfile(
             "Warning: Metagene analysis is requested, but not all bedfiles and/or bedfile entries are in BED12 format. Proceed at your own risk."
         );
     }
-    return (regions, (filename, entries));
+    return Ok((regions, (filename, entries)));
 }
 
 pub fn chrombounds_from_bw(bwfile: &str) -> HashMap<String, u32> {

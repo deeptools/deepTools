@@ -69,11 +69,11 @@ pub fn r_bamcompare(
     let mut blacklistregions: Option<Vec<Region>> = None;
     if blacklist != "None" {
         // Check if it's a bed or gtf file
-        let isbed = is_bed_or_gtf(blacklist);
+        let isbed = is_bed_or_gtf(blacklist)?;
         match isbed.as_str() {
             "gtf" => panic!("Error: Please provide a bed file for the blacklist."),
             "bed" => {
-                let (bls, _) = read_bedfile(&blacklist.to_string(), false, &chromsizes);
+                let (bls, _) = read_bedfile(&blacklist.to_string(), false, &chromsizes)?;
                 blacklistregions = Some(bls);
             }
             _ => panic!("Error: Cannot determine filetype of blacklist file."),
@@ -401,7 +401,7 @@ pub fn r_bamcompare(
     } else {
         Box::new(raw_lines)
     };
-    write_covfile(lines, ofile, ofiletype, chromsizes);
+    write_covfile(lines, ofile, ofiletype, chromsizes)?;
     Ok(())
 }
 
