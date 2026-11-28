@@ -4,6 +4,7 @@ from os import unlink
 
 import numpy as np
 import numpy.testing as nt
+import pytest
 
 import deeptools.bigwigCompare as bwComp
 import deeptools.multiBigwigSummary as bwCorr
@@ -133,3 +134,23 @@ def test_multiBigwigSummary_metagene():
     nt.assert_allclose(matrix, np.array([[20.28956028, 20.28956028],
                                          [22.1923501, 22.1923501]]))
     unlink(outfile)
+
+
+@pytest.mark.parametrize("use_numpy", [0, 1])
+def test_bigwigCompare_preserves_partial_bins(tmp_path, monkeypatch, use_numpy):
+    import pyBigWig
+
+    if use_numpy and not pyBigWig.numpy:
+        pytest.skip("pyBigWig was built without NumPy support")
+    monkeypatch.setattr(pyBigWig, "numpy", use_numpy)
+
+    output = tmp_path / "compared.bg"
+    args = [
+        "-b1", BIGWIG_A, "-b2", BIGWIG_B, "--operation", "mean", "--binSize", "75",
+        "--fixedStep", "--outFileFormat", "bedgraph", "-o", str(output),
+    ]
+    bwComp.main(args)
+    assert output.read_text() == "3R\t0\t75\t0.166667\n3R\t75\t150\t0.833333\n3R\t150\t200\t1.5\n"
+
+    bwComp.main(args + ["--skipNAs"])
+    assert output.read_text() == "3R\t0\t75\tnan\n3R\t75\t150\tnan\n3R\t150\t200\t1.5\n"
