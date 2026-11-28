@@ -17,6 +17,13 @@
 * --missingDataAsZero no longer takes bases exceeding chromosome bounds as 0 values but rather purges the bins
 * large scale values precision slightly altered with new backend (f32 vs f64)
 
+## [4.1.1](https://github.com/deeptools/deepTools/compare/4.1.0...4.1.1) (2026-11-28)
+
+
+### Bug Fixes
+
+* **filehandler:** report bw write and bed parse errors ([#1517](https://github.com/deeptools/deepTools/issues/1517)) ([a661c9c](https://github.com/deeptools/deepTools/commit/a661c9ca07bb0889f1e26b7659ebdae8db62c44d))
+
 ## [4.1.0](https://github.com/deeptools/deepTools/compare/4.0.0...4.1.0) (2026-11-17)
 
 
