@@ -73,6 +73,21 @@ def test_bigwigCompare_skipZeroOverZero():
     unlink(outfile)
 
 
+def test_bigwigCompare_keeps_final_zero_difference(tmp_path):
+    # The input means at 100 bp are [1, 2] and [1, 2].
+    args = [
+        "-b1", ROOT + "testA.bw", "-b2", ROOT + "testB.bw",
+        "--operation", "subtract", "--binSize", "100", "--outFileFormat", "bedgraph",
+    ]
+    fixed = tmp_path / "fixed.bg"
+    bwComp.main(args + ["--fixedStep", "-o", str(fixed)])
+    assert fixed.read_text() == "3R\t0\t100\t0\n3R\t100\t200\t0\n"
+
+    merged = tmp_path / "merged.bg"
+    bwComp.main(args + ["-o", str(merged)])
+    assert merged.read_text() == "3R\t0\t200\t0\n"
+
+
 def test_multiBigwigSummary():
     _, outfile = tempfile.mkstemp(suffix=".npz")
     args = f"bins -b {BIGWIG_A} {BIGWIG_B} --binSize 50 -o {outfile}".split()
